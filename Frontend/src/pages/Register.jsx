@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
 
 const Register = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); //เปลี่ยนเส้นทางหลังจากการลงทะเบียนสำเร็จ
   const [user, setUser] = useState({
     username: "",
     password: "",
@@ -12,7 +12,7 @@ const Register = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUser((user) => ({ ...user, [name]: value }));
+    setUser((user) => ({ ...user, [name]: value })); //ใช้ปรับปรุงค่าภายใน user.
   };
 
   const handleSubmit = async (e) => {
@@ -29,7 +29,6 @@ const Register = () => {
           title: "Registration Successful",
           text: currentUser.data.message,
           icon: "success",
-          confirmButtonText: "OK",
         }).then(() => {
           // After user clicks "OK", reset the form and navigate to login page
           setUser({
@@ -46,7 +45,6 @@ const Register = () => {
             currentUser.data.message ||
             "Registration failed. Please try again.",
           icon: "error",
-          confirmButtonText: "OK",
         });
       }
     } catch (error) {
@@ -56,7 +54,6 @@ const Register = () => {
         title: "Error",
         text: "An unexpected error occurred. Please try again later.",
         icon: "error",
-        confirmButtonText: "OK",
       });
     }
   };
@@ -110,7 +107,7 @@ const Register = () => {
           </label>
 
           <button
-            className="w-full py-2 btn btn-outline btn-secondary"
+            className="w-full py-2 btn text-[#fbeaff] bg-[#1230AE] hover:bg-[#6C48C5] hover:text-white"
             type="submit"
           >
             Register

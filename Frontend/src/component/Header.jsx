@@ -28,11 +28,11 @@ const Header = () => {
       </div>
 
       <div className="navbar-end flex space-x-4">
-        <a href="/Login" className="btn btn-outline btn-accent">
+        <a href="/Login" className="btn text-[#fbeaff] bg-[#1230AE] hover:bg-[#6C48C5] hover:text-white">
           Login
         </a>
 
-        <a href="/Register" className="btn btn-outline btn-secondary">
+        <a href="/Register" className=" btn text-[#fbeaff] bg-[#1230AE] hover:bg-[#6C48C5] hover:text-white">
           Register
         </a>
       </div>

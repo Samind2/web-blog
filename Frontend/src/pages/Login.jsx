@@ -1,9 +1,56 @@
+import { useState } from "react";
+import AuthService from "../services/auth.service";
+import { useNavigate } from "react-router";
+import Swal from "sweetalert2";
+
 const Login = () => {
+  const navigate = useNavigate(); // ใช้สำหรับเปลี่ยนเส้นทาง
+  const [user, setUser] = useState({
+    username: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUser((prevUser) => ({ ...prevUser, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await AuthService.login(user.username, user.password);
+      if (response.status === 200) {
+        // Login สำเร็จ
+        Swal.fire({
+          title: "Login Successful",
+          text: "Welcome back!",
+          icon: "success",
+        }).then(() => {
+          navigate("/Home"); // เปลี่ยนเส้นทางไปยังหน้า Dashboard
+        });
+      } else {
+        // แสดงข้อความ error
+        Swal.fire({
+          title: "Login Failed",
+          text: response.data.message || "Invalid credentials.",
+          icon: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      Swal.fire({
+        title: "Error",
+        text: "An unexpected error occurred. Please try again.",
+        icon: "error",
+      });
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600">
-      <div className="w-full max-w-sm p-8 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
-
+    <div className="w-full max-w-sm p-8 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
+      <form onSubmit={handleSubmit}>
         <label className="input input-bordered flex items-center gap-2 mb-4">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -13,7 +60,15 @@ const Login = () => {
           >
             <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
           </svg>
-          <input type="text" className="grow p-2" placeholder="Username" />
+          <input
+            type="text"
+            className="grow p-2"
+            placeholder="Username"
+            name="username"
+            value={user.username}
+            onChange={handleChange}
+            required
+          />
         </label>
 
         <label className="input input-bordered flex items-center gap-2 mb-6">
@@ -29,15 +84,27 @@ const Login = () => {
               clipRule="evenodd"
             />
           </svg>
-          <input type="password" className="grow p-2" placeholder="Password" />
+          <input
+            type="password"
+            className="grow p-2"
+            placeholder="Password"
+            name="password"
+            value={user.password}
+            onChange={handleChange}
+            required
+          />
         </label>
 
-        <button className="w-full py-2 btn btn-outline btn-primary ">
+        <button
+          type="submit"
+          className="w-full py-2 btn text-[#fbeaff] bg-[#1230AE] hover:bg-[#6C48C5] hover:text-white"
+        >
           Login
         </button>
-      </div>
+      </form>
     </div>
-  );
+  </div>
+);
 };
 
 export default Login;
