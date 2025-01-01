@@ -3,9 +3,15 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import router from "./routes/Router";
 import { RouterProvider } from "react-router";
+import { AuthProvider } from "./context/AuthContext";
+import { CookiesProvider } from "react-cookie";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <CookiesProvider>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </CookiesProvider>
   </StrictMode>
 );

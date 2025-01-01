@@ -2,6 +2,9 @@ import { useState } from "react";
 import AuthService from "../services/auth.service";
 import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
+import TokenService from "../services/token.service";
+import { useAuthContext } from "../context/AuthContext"; //นำเข้าเพื่อเรียกใช้ ฟังชั่นlogin
+
 
 const Login = () => {
   const navigate = useNavigate(); // ใช้สำหรับเปลี่ยนเส้นทาง
@@ -9,10 +12,11 @@ const Login = () => {
     username: "",
     password: "",
   });
+  const { login } = useAuthContext(); //เรียกใช้ ฟังชั่นlogin ในAuthContext
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUser((prevUser) => ({ ...prevUser, [name]: value }));
+    setUser((User) => ({ ...User, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -20,16 +24,17 @@ const Login = () => {
     try {
       const response = await AuthService.login(user.username, user.password);
       if (response.status === 200) {
-        // Login สำเร็จ
+        console.log(response.data);
+        login(response.data.user)//เรียกใช้ ฟังชั่นlogin ในAuthContextที่กำหนดไว้
+        TokenService.setUser(response.data);
         Swal.fire({
           title: "Login Successful",
-          text: "Welcome back!",
+          text: "Welcome!",
           icon: "success",
         }).then(() => {
-          navigate("/Home"); // เปลี่ยนเส้นทางไปยังหน้า Dashboard
+          navigate("/Home");
         });
       } else {
-        // แสดงข้อความ error
         Swal.fire({
           title: "Login Failed",
           text: response.data.message || "Invalid credentials.",
@@ -37,7 +42,7 @@ const Login = () => {
         });
       }
     } catch (error) {
-      console.error("Error during login:", error);
+      console.error("Error during login:", error); // เพิ่มบรรทัดนี้
       Swal.fire({
         title: "Error",
         text: "An unexpected error occurred. Please try again.",
@@ -48,9 +53,8 @@ const Login = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600">
-    <div className="w-full max-w-sm p-8 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
-      <form onSubmit={handleSubmit}>
+      <div className="w-full max-w-sm p-8 bg-white rounded-lg shadow-md">
+        <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
         <label className="input input-bordered flex items-center gap-2 mb-4">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -96,15 +100,14 @@ const Login = () => {
         </label>
 
         <button
-          type="submit"
+          onClick={handleSubmit}
           className="w-full py-2 btn text-[#fbeaff] bg-[#1230AE] hover:bg-[#6C48C5] hover:text-white"
         >
           Login
         </button>
-      </form>
+      </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default Login;

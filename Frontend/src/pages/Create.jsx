@@ -1,86 +1,150 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css"; // นำเข้าธีม Quill
+import "react-quill/dist/quill.snow.css";
+import PostService from "../services/post.service";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router";
+import Editor from "../component/Editor";
 
 const Create = () => {
+  const [postDetail, setPostDetail] = useState({
+    title: "",
+    summary: "",
+    content: "",
+    file: "",
+  });
+
   const [content, setContent] = useState("");
+  const editorRef = useRef(null);
+
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "file") {
+      setPostDetail({ ...postDetail, [name]: e.target.files[0] });
+    } else {
+      setPostDetail({ ...postDetail, [name]: value });
+    }
+  };
 
   const handleContentChange = (value) => {
     setContent(value);
+    setPostDetail({ ...postDetail, content: value });
   };
 
-  // กำหนด toolbar สำหรับ ReactQuill
-  const modules = {
-    toolbar: [
-      [{ font: [] }, { size: ["small", "medium", "large", "huge"] }],
-      [{ header: "1" }, { header: "2" }, { font: [] }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["bold", "italic", "underline", "strike"],
-      ["link", "blockquote", "code-block"],
-      [{ align: [] }],
-      ["image", "video"],
-    ],
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent form from reloading the page
+
+    try {
+      const data = new FormData();
+      data.set("title", postDetail.title);
+      data.set("summary", postDetail.summary);
+      data.set("content", postDetail.content);
+      if (postDetail.file) {
+        data.set("file", postDetail.file);
+      }
+
+      const response = await PostService.createPost(data);
+
+      if (response.status === 200) {
+        Swal.fire({
+          title: "Create Post",
+          text: "Post created successfully.",
+          icon: "success",
+        }).then(() => {
+          setPostDetail({
+            title: "",
+            summary: "",
+            content: "",
+            file: "",
+          });
+        });
+
+        navigate("/");
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: "Something went wrong. Please try again.",
+          icon: "error",
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        title: "Error",
+        text:
+          error.response?.data?.message ||
+          "An error occurred. Please try again.",
+        icon: "error",
+      });
+    }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600">
-      <div className="card w-full max-w-lg bg-white shadow-xl p-8">
-        <h2 className="text-2xl font-bold text-center mb-6">Create New Post</h2>
-        <form>
-          {/* Title Input */}
-          <div className="form-control mb-4">
-            <label className="label">
-              <span className="label-text">Title</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Enter title"
-              className="input input-bordered w-full"
-            />
-          </div>
+    <div className="ax-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-3xl font-bold text-center mb-6">Create New Post</h2>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="title" className="block text-lg font-semibold text-gray-700">
+            Title
+          </label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            className="mt-2 p-3 w-full border border-gray-300 rounded-md"
+            value={postDetail.title}
+            onChange={handleChange}
+            placeholder="Enter the post title"
+            required
+          />
+        </div>
 
-          {/* Summary Input */}
-          <div className="form-control mb-4">
-            <label className="label">
-              <span className="label-text">Summary</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Enter summary"
-              className="input input-bordered w-full"
-            />
-          </div>
+        <div>
+          <label htmlFor="summary" className="block text-lg font-semibold text-gray-700">
+            Summary
+          </label>
+          <input
+            type="text"
+            id="summary"
+            name="summary"
+            className="mt-2 p-3 w-full border border-gray-300 rounded-md"
+            value={postDetail.summary}
+            onChange={handleChange}
+            placeholder="Enter the post summary"
+            required
+          />
+        </div>
 
-          {/* Content Input with ReactQuill */}
-          <div className="form-control mb-4">
-            <label className="label">
-              <span className="label-text">Content</span>
-            </label>
-            <ReactQuill
-              value={content}
-              onChange={handleContentChange}
-              modules={modules} // ตั้งค่า toolbar ที่เรากำหนด
-              className="bg-white"
-            />
-          </div>
+        <div>
+          <label htmlFor="content" className="block text-lg font-semibold text-gray-700">
+            Content
+          </label>
+          <Editor value={content} onChange={handleContentChange} ref={editorRef} />
+        </div>
 
-          {/* File Upload */}
-          <div className="form-control mb-4">
-            <label className="label">
-              <span className="label-text">Upload Image</span>
-            </label>
-            <input
-              type="file"
-              className="file-input file-input-bordered w-full"
-            />
-          </div>
+        <div>
+          <label htmlFor="file" className="block text-lg font-semibold text-gray-700">
+            Upload Image
+          </label>
+          <input
+            type="file"
+            id="file"
+            name="file"
+            className="mt-2 p-3 w-full border border-gray-300 rounded-md"
+            onChange={handleChange}
+          />
+        </div>
 
-          {/* Submit Button */}
-          <button type="submit" className="btn btn-primary w-full">
+        <div className="text-center">
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600"
+          >
             Create Post
           </button>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 };

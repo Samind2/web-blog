@@ -7,7 +7,7 @@ const PostSchema = new Schema({
   content: { type: String, require: true },
   cover: { type: String, require: true },
   author: { type: Schema.Types.ObjectId, ref: "User" },
-});
+}, { timestamps: true });
 
 //สร้างModel
 const PostModel = model("Post", PostSchema);

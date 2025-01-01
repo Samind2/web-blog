@@ -1,16 +1,15 @@
-//priorlty จัดลดับความสำคัญ
-//register Libary:bcrypt  Step :1.check Username,Password 2.check dupicate User(obtional) 3.hook password(แปลงรหัส) 4.save to DB (diagram:Activity/sequence )
-
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken"); // เพิ่มการใช้งาน jwt
 const UserModel = require("../models/User");
 const salt = bcrypt.genSaltSync(10);
 
+
 exports.register = async (req, res) => {
   const { username, password } = req.body;
-     // ตรวจสอบว่าผู้ใช้ได้กรอกข้อมูลเข้ามาไหม
+  // ตรวจสอบว่าผู้ใช้ได้กรอกข้อมูลเข้ามาไหม
   if (!username || !password) {
     res.status(400).send({
-      message: "Please provide all requires fields!",
+      message: "Please provide all required fields!",
     });
     return;
   }
@@ -22,25 +21,21 @@ exports.register = async (req, res) => {
       password: hashesPassword,
     });
     res.send({
-      message: "User Register successfuly",
+      message: "User Registered successfully",
       user,
     });
   } catch (error) {
     res.status(500).send({
-      message:
-        error.message ||
-        "Something error occurred while registering a new user",
+      message: error.message || "Something went wrong during registration",
     });
   }
 };
 
-//Login  Libary:bcrypt  Step :1.รับข้อมูล username และ password จากผู้ใช้ 2.ตรวจสอบว่าได้รับข้อมูลครบถ้วน (เช่น username และ password ไม่ว่างเปล่า) 3.ค้นหา username ในฐานข้อมูล เพื่อยืนยันว่าผู้ใช้นั้นมีอยู่ 4.ตรวจสอบรหัสผ่าน โดยเปรียบเทียบรหัสผ่านที่ผู้ใช้ป้อนเข้ามากับรหัสผ่านที่เก็บไว้ในฐานข้อมูล
 exports.login = async (req, res) => {
-  // ค้นหาชื่อผู้ใช้จากตาราง User โดยใช้ username ในการหา
   const { username, password } = req.body;
 
-   // ตรวจสอบว่าผู้ใช้ได้กรอกข้อมูลเข้ามาไหม 
-   if (!username || !password) {
+  // ตรวจสอบว่าผู้ใช้ได้กรอกข้อมูลเข้ามาไหม 
+  if (!username || !password) {
     res.status(400).send({
       message: "Please provide both username and password!",
     });
@@ -48,35 +43,41 @@ exports.login = async (req, res) => {
   }
 
   try {
-     //ค้นหาผู้ใช้ฐานข้อมูล คำสั่ง findOne จะค้นหาข้อมูลในฐานข้อมูลที่มี username ตรงกับค่าที่ระบุ และจะส่งผลลัพธ์กลับมา
-     const user = await UserModel.findOne({username})
-     if (!user) {
-      res.status(404).send({
-        message:"User not found!!"
-      })
-      return
-     }
-      // เปรียบเทียบรหัสผ่าน
-      const isValidPassword = bcrypt.compareSync(password, user.password);
-      if (!isValidPassword){
-        res.status(404).send({
-          message:"Invalid Password"
-        })
-        return
-      }
+    // ค้นหาผู้ใช้จากฐานข้อมูล
+    const user = await UserModel.findOne({ username });
+    if (!user) {
+      return res.status(404).send({
+        message: "User not found!",
+      });
+    }
 
-      res.send({
-        message:"Login Successful!",
-        user:{
-          id:user._id,
-          username: user.username
-        }
-      })
+    // เปรียบเทียบรหัสผ่าน
+    const isValidPassword = bcrypt.compareSync(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).send({
+        message: "Invalid Password",
+      });
+    }
+
+    // สร้าง JWT Token
+    const token = jwt.sign(
+      { id: user._id, username: user.username },
+      process.env.JWT_SECRET, // ใช้ secret key ที่เก็บใน .env
+      { expiresIn: "1d" } // กำหนดระยะเวลาให้หมดอายุภายใน 1 วัน
+    );
+
+    // ส่ง Token กลับไปพร้อมกับข้อมูลผู้ใช้
+    res.send({
+      message: "Login Successful!",
+      user: {
+        id: user._id,
+        username: user.username,
+      },
+      accessToken: token, // ส่ง token ไปพร้อมกับ response
+    });
   } catch (error) {
     res.status(500).send({
-      message:
-        error.message ||
-        "Something went wrong during login",
+      message: error.message || "Something went wrong during login",
     });
   }
-}
+};
