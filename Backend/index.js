@@ -11,7 +11,15 @@ const BASE_URL = process.env.BASE_URL;
 const PORT = process.env.PORT;
 const DB_URL = process.env.DB_URL;
 
-app.use(cors({ origin: BASE_URL, credentials: true }));
+app.use(
+  cors({
+    origin: "https://web-blog-mx4ctqhcq-saminds-projects.vercel.app", // อนุญาตเฉพาะ URL ของ Frontend
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Methods ที่อนุญาต
+    allowedHeaders: ["Content-Type", "Authorization"], // Headers ที่อนุญาต
+    credentials: true, // อนุญาต Cookies หรือข้อมูล Credential
+  })
+);
+app.options("*", cors()); // เปิดใช้งาน CORS สำหรับทุก endpoint
 app.use(express.json());
 app.get("/", (req, res) => {
   res.send("<h1>Welcome to SE NPRU BLOG Restful API</h1>");
