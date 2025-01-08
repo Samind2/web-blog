@@ -15,7 +15,7 @@ app.use(
   cors({
     origin: "https://web-blog-mx4ctqhcq-saminds-projects.vercel.app", // อนุญาตเฉพาะ URL ของ Frontend
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Methods ที่อนุญาต
-    allowedHeaders: ["Content-Type", "Authorization"], // Headers ที่อนุญาต
+    allowedHeaders: ["Content-Type", "application/json"], // Headers ที่อนุญาต
     credentials: true, // อนุญาต Cookies หรือข้อมูล Credential
   })
 );
