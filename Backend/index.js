@@ -13,13 +13,13 @@ const DB_URL = process.env.DB_URL;
 
 app.use(
   cors({
-    origin: "https://web-blog-2k9x43h1g-saminds-projects.vercel.app", // อนุญาตเฉพาะ URL ของ Frontend
+    origin: ["https://web-blog-six.vercel.app", "https://web-blog-2k9x43h1g-saminds-projects.vercel.app"], // อนุญาตเฉพาะ URL ของ Frontend
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Methods ที่อนุญาต
     allowedHeaders: ["Content-Type", "application/json"], // Headers ที่อนุญาต
     credentials: true, // อนุญาต Cookies หรือข้อมูล Credential
   })
 );
-app.options("*", cors()); // เปิดใช้งาน CORS สำหรับทุก endpoint
+app.options("*", cors()); // เปิดใช้งาน CORS สำหรับทุก endpoiznt
 app.use(express.json());
 app.get("/", (req, res) => {
   res.send("<h1>Welcome to SE NPRU BLOG Restful API</h1>");
